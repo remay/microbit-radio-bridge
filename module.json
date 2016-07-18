@@ -1,0 +1,11 @@
+{
+  "name": "microbit-radio-bridge",
+  "version": "0.0.0",
+  "description": "Simple micro:bit radio to serial bridge",
+  "license": "MIT",
+  "dependencies": {
+    "microbit": "lancaster-university/microbit"
+  },
+  "targetDependencies": {},
+  "bin": "./source"
+}
