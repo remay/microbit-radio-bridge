@@ -54,7 +54,7 @@ void reader() {
     while(1) {
         ManagedString incoming = uBit.serial.readUntil("\n");
 
-	if(incoming->length() < 32) {
+	if(incoming.length() < 32) {
             uBit.radio.datagram.send(incoming);
         }
     }
