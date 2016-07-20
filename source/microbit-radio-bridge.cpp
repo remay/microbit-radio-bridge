@@ -28,11 +28,11 @@ DEALINGS IN THE SOFTWARE.
 MicroBit uBit;
 
 const char * const radio_waves ="\
-  000,000,000,000,000,  000,000,000,000,000,  000,000,255,255,255\n\
-  000,000,000,000,000,  000,000,000,000,000,  000,255,000,000,000\n\
-  000,000,000,000,000,  000,000,000,255,255,  255,000,000,255,255\n\
-  000,000,000,000,000,  000,000,255,000,000,  255,000,255,000,000\n\
-  000,000,000,000,255,  000,000,255,000,255,  255,000,255,000,255\n";
+    000,000,000,000,000,  000,000,000,000,000,  000,000,255,255,255\n\
+    000,000,000,000,000,  000,000,000,000,000,  000,255,000,000,000\n\
+    000,000,000,000,000,  000,000,000,255,255,  255,000,000,255,255\n\
+    000,000,000,000,000,  000,000,255,000,000,  255,000,255,000,000\n\
+    000,000,000,000,255,  000,000,255,000,255,  255,000,255,000,255\n";
 
 MicroBitImage radio(radio_waves);
 
@@ -43,7 +43,7 @@ MicroBitImage radio(radio_waves);
 
 void onData(MicroBitEvent) {
     ManagedString message = uBit.radio.datagram.recv();
-    uBit.serial.send(message);
+    uBit.serial.send(message + "\n");
 }
 
 /*
@@ -54,7 +54,7 @@ void reader() {
     while(1) {
         ManagedString incoming = uBit.serial.readUntil("\n");
 
-	if(incoming.length() < 32) {
+        if(incoming.length() < 32) {
             uBit.radio.datagram.send(incoming);
         }
     }
@@ -62,34 +62,37 @@ void reader() {
 
 
 int main() {
-  // Initialise the micro:bit runtime.
-  uBit.init();
-  uBit.radio.enable();
+    // Initialise the micro:bit runtime.
+    uBit.init();
+    uBit.radio.enable();
 
-  // Initialise the micro:bit listeners for radio datagrams.
-  uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
+    // Initialise the micro:bit listeners for radio datagrams.
+    // XXX Should probably move this until after all initialisation and we're
+    // ready to process incoming messages
+    uBit.messageBus.listen(MICROBIT_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
 
-  // Sets the group to an arbitrary number (69 in this case) to avoid interference
-  // XXX Might be good to be able to set the group via serial?
-  uBit.radio.setGroup(69);
+    // Sets the group to an arbitrary number (69 in this case) to avoid interference
+    // Might be good to be able to set the group via serial?
+    uBit.radio.setGroup(69);
 
-  // Use the highest output put level on the radio, to increase range and reliability.
-  uBit.radio.setTransmitPower(7);
+    // Use the highest output put level on the radio, to increase range and reliability.
+    uBit.radio.setTransmitPower(7);
 
-  // Increase the receive buffer size on our serial port, to be at least the same size as
-  // a packet. This guarantees correct parsing of packets.
-  uBit.serial.setRxBufferSize(32);
+    // Increase the receive buffer size on our serial port, to be at least the same size as
+    // a packet. This guarantees correct parsing of packets.
+    // XXX Do we need to do the same for the tx buffer?
+    uBit.serial.setRxBufferSize(32);
 
-  // Run a short animaiton at power up.
-  uBit.display.animateAsync(radio, 500, 5, 0, 0);
+    // Run a short animaiton at power up.
+    uBit.display.animateAsync(radio, 500, 5, 0, 0);
 
-  // Creates a new fiber that listens for incoming serial signals
-  create_fiber(reader);
+    // Creates a new fiber that listens for incoming serial signals
+    create_fiber(reader);
 
-  // Get into powersaving sleep mode, whilst still processing events?  XXX Wouldn't release_fiber() be better?
-  while(1) {
-    uBit.sleep(10000);
-  }
+    // Get into powersaving sleep mode, whilst still processing events?  XXX Wouldn't release_fiber() be better?
+    while(1) {
+        uBit.sleep(10000);
+    }
 
-  // NOT REACHED
+    // NOT REACHED
 }
